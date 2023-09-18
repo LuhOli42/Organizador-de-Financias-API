@@ -18,13 +18,17 @@ const login = async (req, res) => {
     );
 
     if (usuario.rowCount === 0) {
-      return res.status(400).json({ mensagem: "Email ou senha incorretos" });
+      return res.status(400).json({
+        mensagem: "Usuário e/ou senha inválido(s).",
+      });
     }
 
     const validade = await bcrypt.compare(senha, usuario.rows[0].senha);
 
     if (!validade) {
-      return res.status(400).json({ mensagem: " Email ou senha incorretos" });
+      return res.status(400).json({
+        mensagem: "Usuário e/ou senha inválido(s).",
+      });
     }
     const token = await jwt.sign({ id: usuario.rows[0].id }, apiKey, {
       expiresIn: "8h",

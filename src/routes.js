@@ -17,7 +17,7 @@ routes.post("/login", auth.login);
 /**
  * * authenticate routes
  */
-// routes.use(mdw.authenticate);
+routes.use(authenticate);
 
 /**
  * * Login routes
