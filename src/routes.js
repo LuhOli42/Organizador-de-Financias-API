@@ -3,14 +3,15 @@ const auth = require("./controllers/auth");
 const user = require("./controllers/user");
 const trans = require("./controllers/trans");
 const categ = require("./controllers/categ");
-const mdw = require("./middlewares/authenticate");
+const { authenticate } = require("./middlewares/authenticate");
+const verify = require("./middlewares/verify");
 
 const routes = express();
 
 /**
  * * User routes
  */
-routes.post("/usuario", user.cadastrarUsuario);
+routes.post("/usuario", verify.nomeEmailSenha, user.cadastrarUsuario);
 routes.post("/login", auth.login);
 
 /**
@@ -22,7 +23,7 @@ routes.post("/login", auth.login);
  * * Login routes
  */
 routes.get("/usuario", user.detalharUsuario);
-routes.put("/usuario", user.atualizarUsuario);
+routes.put("/usuario", verify.nomeEmailSenha, user.atualizarUsuario);
 routes.get("/categoria", categ.listarCategorias);
 routes.get("/transacao", trans.listarTransUser);
 routes.get("/transacao/:id", trans.detalharTransUser);
