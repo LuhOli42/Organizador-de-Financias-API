@@ -27,8 +27,8 @@ routes.put("/usuario", verify.nomeEmailSenha, user.atualizarUsuario);
 routes.get("/categoria", categ.listarCategorias);
 routes.get("/transacao", trans.listarTransUser);
 routes.get("/transacao/:id", trans.detalharTransUser);
-routes.post("/transacao", trans.cadastrarTransUser);
-routes.put("/transacao/:id", trans.atualizarTransUser);
+routes.post("/transacao", verify.verificarTrans, trans.cadastrarTransUser);
+routes.put("/transacao/:id", verify.verificarTrans, trans.atualizarTransUser);
 routes.delete("/transacao/:id", trans.cancelarTransUser);
 routes.get("/transacao/extrato", trans.extratoTrans);
 

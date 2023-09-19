@@ -20,8 +20,10 @@ const cadastrarUsuario = async (req, res) => {
        values ($1, $2, $3) returning *`,
       [nome, email, senhaCrypto]
     );
+    const usuario = { ...cadastrarUser.rows[0] }
+    delete usuario.senha
 
-    return res.status(201).json(cadastrarUser.rows[0]);
+    return res.status(201).json(usuario);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ mensagem: "Erro no servidor" });

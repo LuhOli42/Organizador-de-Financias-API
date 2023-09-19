@@ -14,7 +14,7 @@ create table transacoes
 (   id serial primary key,
     descricao text,
     valor integer not null,
-    data timestamp default now(),
+    data timestamp,
     categoria_id integer not null references categorias(id),
     usuario_id integer not null references usuarios(id),
     tipo text not null);
