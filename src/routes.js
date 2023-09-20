@@ -33,4 +33,5 @@ routes.put("/transacao/:id", verify.verificarTrans, trans.atualizarTransUser);
 routes.delete("/transacao/:id", trans.cancelarTransUser);
 
 
+
 module.exports = routes;

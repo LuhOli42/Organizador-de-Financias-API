@@ -1,25 +1,55 @@
 const pool = require("../database/database");
 
 const listarTransUser = async (req, res) => {
+  const {filtro}= req.query
   const { id } = req.usuario
+
+  if (!filtro){
   try {
-    const { rows: listaTrans } = await pool.query('select * from transacoes where usuario_id=$1', [id])
+    const { rows: listaTrans } = await pool.query(`select t.id,t.tipo,t.descricao,t.valor,t.data,t.usuario_id,t.categoria_id,c.descricao as categoria_nome 
+    from transacoes t join categorias c 
+    on t.categoria_id= c.id where usuario_id=$1`, [id])
 
     return res.status(200).json(listaTrans);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ mensagem: "Erro no servidor" });
+    }
+  }
+  const array = []
+
+  for (let i = 0; i < filtro.length; i++) {
+    try {
+      const objeto = await pool.query(`select t.id,t.tipo,t.descricao,t.valor,t.data,t.usuario_id,t.categoria_id,c.descricao as categoria_nome 
+      from transacoes t join categorias c 
+      on t.categoria_id= c.id where c.descricao=$1`, [filtro[i]])
+      
+      if (objeto.rowCount === 1){
+      array.push(objeto.rows[0])
+      } if (objeto.rowCount > 1) {
+        for (let x = 0; x < objeto.rows.length; x++) {
+          array.push(objeto.rows[x])
+        }
+}
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ mensagem: "Erro no servidor" });
+      }
+  }
+  return res.status(200).json(array);
   }
 
-};
+;
 
 const detalharTransUser = async (req, res) => {
   const { id: id_usuario } = req.usuario
   const { id: id_transacao } = req.params
 
   try {
-    const { rows, rowCount } = await pool.query(`
-    select * from transacoes where usuario_id=$1 and id=$2` , [id_usuario, id_transacao])
+    const { rows, rowCount } = await pool.query(
+    `select t.id,t.tipo,t.descricao,t.valor,t.data,t.usuario_id,t.categoria_id,c.descricao as categoria_nome 
+    from transacoes t join categorias c 
+    on t.categoria_id= c.id where usuario_id=$1 and id=$2` , [id_usuario, id_transacao])
 
     if (rowCount === 0) {
       return res.status(400).json({
@@ -51,13 +81,21 @@ const cadastrarTransUser = async (req, res) => {
       })
     }
 
+    
     const cadastrarTrans = await pool.query(
       `insert into transacoes (descricao, valor, data, categoria_id, tipo, usuario_id)
-       values ($1, $2, $3, $4, $5, $6) returning *`,
+       values ($1, $2, $3, $4, $5, $6) returning id`,
       [descricao, valor, data, categoria_id, tipo, id]
     );
 
-    return res.status(201).json(cadastrarTrans.rows[0]);
+
+    const selecionarTrans = await pool.query(
+      `select t.id,t.tipo,t.descricao,t.valor,t.data,t.usuario_id,t.categoria_id,c.descricao as categoria_nome 
+      from transacoes t join categorias c 
+      on t.categoria_id= c.id where t.id=$1` , [cadastrarTrans.rows[0].id])
+
+    
+    return res.status(201).json(selecionarTrans.rows[0]);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ mensagem: "Erro no servidor" });
@@ -129,10 +167,34 @@ const cancelarTransUser = async (req, res) => {
 };
 
 const extratoTrans = async (req, res) => { 
+const { id } = req.usuario
+  try {
+    const { rows: somaTrans } = await pool.query('select tipo, sum(valor) from transacoes where usuario_id=$1 group by tipo', [id])
 
-  //select sum(valor) from trasacoes where tipo = entrada
-  //select sum(valor) from trasacoes where tipo = saida
-  //??????
+    let valorEntrada = 0;
+    let valorSaida = 0;
+
+    somaTrans.map((objeto) => {
+      if(objeto.tipo === "entrada"){
+        valorEntrada = objeto.sum
+      } else if(
+        objeto.tipo === "saida"){
+        valorSaida = objeto.sum
+      } 
+
+      }) 
+
+    const extrato = {
+      entrada: valorEntrada,
+      saida: valorSaida
+    }
+
+    return res.status(200).json(extrato);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ mensagem: "Erro no servidor" });
+  }
+
 };
 
 module.exports = {
