@@ -57,10 +57,12 @@ const atualizarUsuario = async (req, res) => {
     );
 
     if (verificarEmail.rowCount > 0) {
-      return res.status(400).json({
-        mensagem:
-          "O e-mail informado já está sendo utilizado por outro usuário.",
-      });
+      if (verificarEmail.rows[0].id !== id) {
+        return res.status(400).json({
+          mensagem:
+            "O e-mail informado já está sendo utilizado por outro usuário.",
+        });
+      }
     }
 
     const senhaCrypto = await bcrypt.hash(senha, 10);
