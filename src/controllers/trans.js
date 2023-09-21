@@ -9,7 +9,7 @@ const listarTransUser = async (req, res) => {
       const { rows: listaTrans } = await pool.query(
         `select t.id,t.tipo,t.descricao,t.valor,t.data,t.usuario_id,t.categoria_id,c.descricao as categoria_nome 
     from transacoes t join categorias c 
-    on t.categoria_id= c.id where usuario_id=$1`,
+    on t.categoria_id= c.id where t.usuario_id=$1`,
         [id]
       );
 
@@ -26,8 +26,8 @@ const listarTransUser = async (req, res) => {
       const objeto = await pool.query(
         `select t.id,t.tipo,t.descricao,t.valor,t.data,t.usuario_id,t.categoria_id,c.descricao as categoria_nome 
       from transacoes t join categorias c 
-      on t.categoria_id= c.id where LOWER(c.descricao)=$1`,
-        [filtro[i].toLowerCase()]
+      on t.categoria_id= c.id where LOWER(c.descricao)=$1 and t.usuario_id=$2`,
+        [filtro[i].toLowerCase(), id]
       );
 
       if (objeto.rowCount === 1) {
