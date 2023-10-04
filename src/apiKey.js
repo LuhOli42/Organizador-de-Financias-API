@@ -1,1 +1,1 @@
-module.exports = "Senha Da Api";
+module.exports = process.env.SENHA_HASH;
