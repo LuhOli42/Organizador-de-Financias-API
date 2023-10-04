@@ -1,5 +1,3 @@
-create database dindin;
-
 create table usuarios
 ( id serial primary key,
   nome text not null,
