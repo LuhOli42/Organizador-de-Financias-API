@@ -1,18 +1,27 @@
 const express = require("express");
-const auth = require("./controllers/auth");
+const login = require("./controllers/login");
 const user = require("./controllers/user");
-const trans = require("./controllers/trans");
+const transcation = require("./controllers/transactions");
 const categ = require("./controllers/categ");
-const { authenticate } = require("./middlewares/authenticate");
-const verify = require("./middlewares/verify");
+const authenticate = require("./middlewares/authenticate");
+const { verifyBodyRequest } = require("./middlewares/verify");
+const {
+  schemaTransacao,
+  schemaUsuario,
+  schemaLogin,
+} = require("./utils/schemas");
 
 const routes = express();
 
 /**
  * * User routes
  */
-routes.post("/usuario", verify.nomeEmailSenha, user.cadastrarUsuario);
-routes.post("/login", auth.login);
+routes.post(
+  "/usuario",
+  verifyBodyRequest(schemaUsuario),
+  user.cadastrarUsuario
+);
+routes.post("/login", verifyBodyRequest(schemaLogin), login.login);
 
 /**
  * * authenticate routes
@@ -23,15 +32,21 @@ routes.use(authenticate);
  * * Login routes
  */
 routes.get("/usuario", user.detalharUsuario);
-routes.put("/usuario", verify.nomeEmailSenha, user.atualizarUsuario);
+routes.put("/usuario", verifyBodyRequest(schemaUsuario), user.atualizarUsuario);
 routes.get("/categoria", categ.listarCategorias);
-routes.get("/transacao", trans.listarTransUser);
-routes.get("/transacao/extrato", trans.extratoTrans);
-routes.get("/transacao/:id", trans.detalharTransUser);
-routes.post("/transacao", verify.verificarTrans, trans.cadastrarTransUser);
-routes.put("/transacao/:id", verify.verificarTrans, trans.atualizarTransUser);
-routes.delete("/transacao/:id", trans.cancelarTransUser);
-
-
+routes.get("/transacao", transcation.listarTransUser);
+routes.get("/transacao/extrato", transcation.extratoTrans);
+routes.get("/transacao/:id", transcation.detalharTransUser);
+routes.post(
+  "/transacao",
+  verifyBodyRequest(schemaTransacao),
+  transcation.cadastrarTransUser
+);
+routes.put(
+  "/transacao/:id",
+  verifyBodyRequest(schemaTransacao),
+  transcation.atualizarTransUser
+);
+routes.delete("/transacao/:id", transcation.cancelarTransUser);
 
 module.exports = routes;

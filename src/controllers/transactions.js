@@ -4,46 +4,29 @@ const listarTransUser = async (req, res) => {
   const { filtro } = req.query;
   const { id } = req.usuario;
 
-  if (!filtro) {
-    try {
-      const { rows: listaTrans } = await pool.query(
-        `select t.id,t.tipo,t.descricao,t.valor,t.data,t.usuario_id,t.categoria_id,c.descricao as categoria_nome 
+  try {
+    let query = `select t.id,t.tipo,t.descricao,t.valor,t.data,t.usuario_id,t.categoria_id,c.descricao as categoria_nome 
     from transacoes t join categorias c 
-    on t.categoria_id= c.id where t.usuario_id=$1`,
-        [id]
-      );
+    on t.categoria_id= c.id where t.usuario_id=$1 `;
+    const arrayDaQuery = [id];
 
-      return res.status(200).json(listaTrans);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ mensagem: "Erro no servidor" });
-    }
-  }
-  const array = [];
-
-  for (let i = 0; i < filtro.length; i++) {
-    try {
-      const objeto = await pool.query(
-        `select t.id,t.tipo,t.descricao,t.valor,t.data,t.usuario_id,t.categoria_id,c.descricao as categoria_nome 
-      from transacoes t join categorias c 
-      on t.categoria_id= c.id where LOWER(c.descricao)=$1 and t.usuario_id=$2`,
-        [filtro[i].toLowerCase(), id]
-      );
-
-      if (objeto.rowCount === 1) {
-        array.push(objeto.rows[0]);
-      }
-      if (objeto.rowCount > 1) {
-        for (let x = 0; x < objeto.rows.length; x++) {
-          array.push(objeto.rows[x]);
+    if (filtro) {
+      query += `and `;
+      for (let index = 0; index < filtro.length; index++) {
+        arrayDaQuery.push(filtro[index]);
+        query += `LOWER(c.descricao)=$${index + 2} `;
+        if (index + 1 < filtro.length) {
+          query += `or `;
         }
       }
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ mensagem: "Erro no servidor" });
     }
+    const { rows: listaTrans } = await pool.query(query, arrayDaQuery);
+
+    return res.status(200).json(listaTrans);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ mensagem: "Erro no servidor" });
   }
-  return res.status(200).json(array);
 };
 
 const detalharTransUser = async (req, res) => {
